@@ -1,0 +1,246 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Access Manager - Mireda</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/styles.css') }}">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+</head>
+<body>
+    <div class="dashboard-container">
+        <header class="main-header">
+            <div class="logo">
+                <i class="fas fa-gamepad"></i> Acess Manager - Mireda
+            </div>
+            <div class="user-info">
+                <span><i class="fas fa-user"></i> {{ username }}</span>
+                <a href="{{ url_for('logout') }}" class="btn btn-small btn-danger">
+                    <i class="fas fa-sign-out-alt"></i> Logout
+                </a>
+            </div>
+        </header>
+        
+        <main class="dashboard-content">
+            <div class="tabs-container">
+                <div class="tabs">
+                    <button id="manage-tab" class="tab-btn active">
+                        <i class="fas fa-users"></i> Manage SteamIDs
+                    </button>
+                    <button id="servers-tab" class="tab-btn">
+                        <i class="fas fa-server"></i> Manage Servers
+                    </button>
+                </div>
+            </div>
+            
+            <div id="manage-content" class="tab-content active">
+                <div class="server-selector">
+                    <h2><i class="fas fa-server"></i> Select Server</h2>
+                    <select id="server-dropdown">
+                        <option value="">-- Select a Server --</option>
+                        {% for server in servers %}
+                        <option value="{{ server }}">{{ server }}</option>
+                        {% endfor %}
+                    </select>
+                </div>
+                
+                <div class="server-panel" id="server-panel">
+                    <div class="initial-message">
+                        <i class="fas fa-arrow-up"></i>
+                        <p>Please select a server from the dropdown above</p>
+                    </div>
+                    
+                    <div class="steamid-manager hidden">
+                        <div class="panel-header">
+                            <h2><i class="fas fa-users"></i> <span id="server-name">Server</span> - Allowed Steam IDs</h2>
+                            <div class="server-actions">
+                                <button id="view-server-details" class="btn btn-secondary">
+                                    <i class="fas fa-info-circle"></i> Server Details
+                                </button>
+                                <button id="add-steamid-btn" class="btn btn-success">
+                                    <i class="fas fa-plus"></i> Add Steam ID
+                                </button>
+                            </div>
+                        </div>
+                        
+                        <div class="steamid-list">
+                            <table id="steamid-table">
+                                <thead>
+                                    <tr>
+                                        <th>Name</th>
+                                        <th>Steam ID</th>
+                                        <th>Actions</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="steamid-tbody">
+                                </tbody>
+                            </table>
+                            
+                            <div id="no-steamids-message" class="hidden">
+                                <p><i class="fas fa-info-circle"></i> No Steam IDs registered for this server yet.</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <div id="servers-content" class="tab-content">
+                <div class="servers-header">
+                    <h2><i class="fas fa-server"></i> Manage Servers</h2>
+                    <button id="add-server-btn" class="btn btn-success">
+                        <i class="fas fa-plus"></i> Add New Server
+                    </button>
+                </div>
+                
+                <div class="servers-list-panel">
+                    <table id="servers-table">
+                        <thead>
+                            <tr>
+                                <th>Server Name</th>
+                                <th>IP Address</th>
+                                <th>Port</th>
+                                <th>Steam IDs</th>
+                                <th>Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody id="servers-tbody">
+                        </tbody>
+                    </table>
+                    
+                    <div id="no-servers-message" class="hidden">
+                        <p><i class="fas fa-info-circle"></i> No servers have been configured yet.</p>
+                    </div>
+                </div>
+            </div>
+        </main>
+    </div>
+    
+    <div id="steamid-modal" class="modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h2 id="modal-title">Add Steam ID</h2>
+                <span class="close-modal">&times;</span>
+            </div>
+            <div class="modal-body">
+                <form id="steamid-form">
+                    <div class="form-group">
+                        <label for="player-name">Player Name</label>
+                        <input type="text" id="player-name" required placeholder="John Doe">
+                    </div>
+                    <div class="form-group">
+                        <label for="steamid-input">Steam ID</label>
+                        <input type="text" id="steamid-input" required placeholder="STEAM_0:1:12345678">
+                        <small class="steam-id-format">Format: STEAM_0:X:XXXXXXXX</small>
+                    </div>
+                    <input type="hidden" id="edit-mode" value="add">
+                    <input type="hidden" id="original-steamid" value="">
+                    <div class="form-actions">
+                        <button type="button" class="btn btn-danger close-btn">Cancel</button>
+                        <button type="submit" class="btn btn-primary">Save</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Add/Edit Server Modal -->
+    <div id="server-modal" class="modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h2 id="server-modal-title">Add Server</h2>
+                <span class="close-modal">&times;</span>
+            </div>
+            <div class="modal-body">
+                <form id="server-form">
+                    <div class="form-group">
+                        <label for="server-name-input">Server Name</label>
+                        <input type="text" id="server-name-input" required placeholder="CS:S Server #3">
+                    </div>
+                    <div class="form-group">
+                        <label for="server-ip">IP Address</label>
+                        <input type="text" id="server-ip" placeholder="1.2.3.4">
+                    </div>
+                    <div class="form-group">
+                        <label for="server-port">Port</label>
+                        <input type="text" id="server-port" placeholder="27015">
+                    </div><!--
+                    <div class="form-group">
+                        <label for="server-rcon">RCON Password</label>
+                        <input type="password" id="server-rcon" placeholder="rcon password">
+                        <small>Leave empty to keep current password</small>
+                    </div>-->
+                    <input type="hidden" id="server-edit-mode" value="add">
+                    <input type="hidden" id="original-server-name" value="">
+                    <div class="form-actions">
+                        <button type="button" class="btn btn-danger close-btn">Cancel</button>
+                        <button type="submit" class="btn btn-primary">Save</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+    
+    <div id="server-details-modal" class="modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h2>Server Connection Details</h2>
+                <span class="close-modal">&times;</span>
+            </div>
+            <div class="modal-body">
+                <div class="server-details-content">
+                    <div class="detail-group">
+                        <label>Server Name:</label>
+                        <span id="detail-server-name">-</span>
+                    </div>
+                    <div class="detail-group">
+                        <label>IP Address:</label>
+                        <span id="detail-server-ip">-</span>
+                    </div>
+                    <div class="detail-group">
+                        <label>Port:</label>
+                        <span id="detail-server-port">-</span>
+                    </div><!--
+                    <div class="detail-group">
+                        <label>RCON Password:</label>
+                        <span id="detail-server-rcon">******** </span>
+                        <button id="show-rcon-btn" class="btn btn-small btn-secondary">
+                            <i class="fas fa-eye"></i>
+                        </button>
+                    </div>-->
+                    <div class="detail-group">
+                        <label>Connect Command:</label>
+                        <div class="connect-command">
+                            <pre id="connect-command">connect 192.168.1.1:27015</pre>
+                            <button id="copy-connect-cmd" class="btn btn-small btn-secondary">
+                                <i class="fas fa-copy"></i> Copy
+                            </button>
+                        </div>
+                    </div>
+                </div>
+                <div class="form-actions">
+                    <button type="button" class="btn btn-secondary close-btn">Close</button>
+                    <button type="button" id="edit-server-details-btn" class="btn btn-primary">Edit Server</button>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <div id="confirm-modal" class="modal">
+        <div class="modal-content confirmation-modal">
+            <div class="modal-header">
+                <h2>Confirm Deletion</h2>
+                <span class="close-modal">&times;</span>
+            </div>
+            <div class="modal-body">
+                <p id="confirm-message">Are you sure you want to remove <span id="delete-name"></span> (<span id="delete-steamid"></span>) from the allowed list?</p>
+                <div class="form-actions">
+                    <button type="button" class="btn btn-secondary close-btn">Cancel</button>
+                    <button type="button" id="confirm-delete-btn" class="btn btn-danger">Delete</button>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <script src="{{ url_for('static', filename='js/script.js') }}"></script>
+</body>
+</html>
