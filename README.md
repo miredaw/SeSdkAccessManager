@@ -6,10 +6,10 @@ A comprehensive access control system for Source Engine servers that provides re
 
 ### Web Management Panel
 ![Dashboard](images/dashboard.png)
-*Main dashboard showing server overview and management options*
+*Server configuration and Steam ID management interface*
 
 ![Server Management](images/server-management.png)
-*Server configuration and Steam ID management interface*
+*Main dashboard showing server overview and management options*
 
 ## Features
 
