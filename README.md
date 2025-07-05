@@ -1,4 +1,4 @@
-# CS:S Access Manager
+# Source Engine Access Manager
 
 A comprehensive access control system for Source Engine servers that provides real-time player allowlist management through a web interface and SourceMod plugin.
 
